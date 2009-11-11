@@ -1,0 +1,10 @@
+#!/bin/bash
+
+export trunk_dir=/root/dp-trunk/
+export release_dir=/root/dp-release/dp-0.1.0/
+
+trunk=`svn up $trunk_dir|grep revision|awk -F' ' '{ print $3 }'|awk -F'.' '{print $1}'`
+release=`svn info $release_dir | grep "Last Changed Rev"|awk -F: '{print $2}'`
+
+info=`svn merge -r $release:$trunk $trunk_dir $release_dir && svn ci -m '' $release_dir`
+echo $info
