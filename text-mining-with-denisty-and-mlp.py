@@ -1,4 +1,9 @@
-#!-*- encoding:utf-8-*-
+#!/bin/env python
+
+#Author:gfn (breeze.guangfeng@gmail.com)
+
+#-*- encoding:utf-8-*-
+
 import htmllib
 import urllib2
 import formatter,StringIO
@@ -70,20 +75,14 @@ class LineWirter(formatter.AbstractWriter):
     def output(self):
         self.compute_density()
         output = StringIO.StringIO()
+        lt = []
         for l in self.lines:
             if l.density > 0.5:
                 output.write(l.text)
+                lt.append(l.density)
         return output.getvalue()
+        #return lt
 
-# class AbstractWriter(formatter.AbstractWriter):
-#     """
-#     """
-
-#     def __init__(self, *args):
-#         """
-#         """
-#         formatter.AbstractWriter.__init__(self)    
- 
 
 def extract_text(html):
     """
@@ -96,10 +95,11 @@ def extract_text(html):
     parser = TrackParser(writer,fmt)
     parser.feed(html)
     parser.close()
-    
     return writer.output()
+#    return [[l.bytes,len(l.text)] for l in writer.lines]
 
         
 
-htmls = urllib2.urlopen("http://ent.hunantv.com/t/20091125/501015.html")
-s = open('e.html','w+').write(extract_text(htmls.read()))
+htmls = urllib2.urlopen("http://ent.hunantv.com/z/20091126/501411.html")
+d =extract_text(htmls.read())
+print d
