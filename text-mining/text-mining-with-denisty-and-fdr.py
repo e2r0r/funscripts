@@ -1,4 +1,12 @@
-#!-*- encoding:utf-8-*-
+#!/usr/bin env python
+#-*- encoding:utf-8 -*-
+
+"""
+this program is used to extract text content from web pages.
+It's algorithm is text-density and FDR(False Discovery Rate).
+Author:gfn (breeze.guangfeng@gmail.com)
+"""
+
 import htmllib
 import urllib2
 import formatter,StringIO
@@ -50,9 +58,7 @@ class LineWirter(formatter.AbstractWriter):
             return
         self.lines[-1].text += 'n'*(blankline+1)
         self.lines[-1].bytes += 2*(blankline+1)
-        self.lines.append(Para()) #bug
-        #print 'n'*(blankline+1)
-        #midu.append([self.lines[-2].bytes ,len(self.lines[-2].text)])
+        self.lines.append(Para())
         
     def send_literal_data(self,data):
         self.send_flowing_data(data)
@@ -75,31 +81,29 @@ class LineWirter(formatter.AbstractWriter):
                 output.write(l.text)
         return output.getvalue()
 
-# class AbstractWriter(formatter.AbstractWriter):
-#     """
-#     """
-
-#     def __init__(self, *args):
-#         """
-#         """
-#         formatter.AbstractWriter.__init__(self)    
- 
+    def output_fdr(self):
+        self.compute_density()
+        pvalue = map(lambda x:1.0/x.density ,self.lines)
+        pvalue.sort(reverse=True)
+        i = len(self.lines)
+        m = [j for j in range(i) if pvalue[j] <= (j*5)/i][0]
+        density = 1.0/pvalue[m]
+        output = StringIO.StringIO()
+        output.writelines(''.join([l.text for l in self.lines if l.density > density]))
+        return output.getvalue()
+        
 
 def extract_text(html):
-    """
-    
-    Arguments:
-    - `html`:
-    """
+
     writer = LineWirter()
     fmt = formatter.AbstractFormatter(writer)
     parser = TrackParser(writer,fmt)
     parser.feed(html)
     parser.close()
-    
+
     return writer.output()
 
         
 
-htmls = urllib2.urlopen("http://ent.hunantv.com/t/20091125/501015.html")
+htmls = urllib2.urlopen("http://mil.news.sina.com.cn/s/2009-11-28/1139575478.html")
 s = open('e.html','w+').write(extract_text(htmls.read()))

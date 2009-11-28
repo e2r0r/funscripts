@@ -1,12 +1,11 @@
 #!/bin/env python
-
 #Author:gfn (breeze.guangfeng@gmail.com)
-
 #-*- encoding:utf-8-*-
 
 import htmllib
 import urllib2
 import formatter,StringIO
+from pyfann import fann,libfann
 
 class TrackParser(htmllib.HTMLParser):
 
@@ -55,9 +54,7 @@ class LineWirter(formatter.AbstractWriter):
             return
         self.lines[-1].text += 'n'*(blankline+1)
         self.lines[-1].bytes += 2*(blankline+1)
-        self.lines.append(Para()) #bug
-        #print 'n'*(blankline+1)
-        #midu.append([self.lines[-2].bytes ,len(self.lines[-2].text)])
+        self.lines.append(Para()) 
         
     def send_literal_data(self,data):
         self.send_flowing_data(data)
@@ -70,25 +67,26 @@ class LineWirter(formatter.AbstractWriter):
         for l in self.lines:
             l.density = len(l.text) / float(l.bytes)
             total += l.density
-        self.average = total / float(len(self.lines))
-    
+        self.average = total / float(len(self.lines)) 
+
     def output(self):
         self.compute_density()
         output = StringIO.StringIO()
-        lt = []
-        for l in self.lines:
-            if l.density > 0.5:
-                output.write(l.text)
-                lt.append(l.density)
+        output.writelines(''.join(self.get_density_with_ann()))
         return output.getvalue()
-        #return lt
+    
+    def get_density_with_ann(self):
+        obj = libfann.fann_create_standard_array(2, (3, 1))
+        ann = fann.fann_class(obj)
+        patterns = fann.read_train_from_file('train_data.txt')
+        ann.train_on_data(patterns, 1000, 1, 0.0)
+        return [line[3] for line in map(lambda x:[x.density,x.bytes,len(x.text),x.text] , self.lines) if ann.run(line[0:2])[0] > 0]    
 
-
-def extract_text(html):
+def text_mining(html):
     """
     
     Arguments:
-    - `html`:
+    - `html`:web page html source code
     """
     writer = LineWirter()
     fmt = formatter.AbstractFormatter(writer)
@@ -96,10 +94,7 @@ def extract_text(html):
     parser.feed(html)
     parser.close()
     return writer.output()
-#    return [[l.bytes,len(l.text)] for l in writer.lines]
-
         
 
-htmls = urllib2.urlopen("http://ent.hunantv.com/z/20091126/501411.html")
-d =extract_text(htmls.read())
-print d
+html = urllib2.urlopen("http://ent.hunantv.com/t/20091125/501015.html")
+text = text_mining(html.read())

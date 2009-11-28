@@ -14,3 +14,8 @@ More for this, I will note above all the scripts with weblog ***http://gfnpad.bl
  - ***Subverion Update Daemon*** ------ update.pl @ ***perl***
 
  - ***Subversion Server Distribute Project*** ------ svn-distribute.pl @ ***perl***
+
+ - ***Text Mining (Extract Text Information From HTML Pages) With Denisty And FDR Algotithm*** ------ text-mining/text-mining-with-denisty-and-fdr.py @ ***python*** 
+
+ - ***Text Mining (Extract Text Information From HTML Pages) With FANN(MLP)*** ------ text-mining/text-mining-with-denisty-and-mlp.py @ ***python***
+
